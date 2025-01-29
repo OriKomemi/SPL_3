@@ -9,7 +9,7 @@ private:
     int receiptCounter;       // Tracks receipt IDs
     bool isLoggedIn;          // Tracks login state
     std::string username;     // Stores username
-    std::map<int, std::string> subscriptions;  // Maps subscription IDs to topics
+    std::map<std::string, int> subscriptions;  // Maps subscription IDs to topics
 
     // Generate a unique subscription ID
     int generateSubscriptionId();
@@ -26,7 +26,7 @@ public:
 
     // Subscription management
     std::string subscribe(const std::string& destination);
-    std::string unsubscribe(int id);
+    std::string unsubscribe(const std::string& destination);
 
     // Send messages
     std::string send(const std::string& destination, const std::string& message);

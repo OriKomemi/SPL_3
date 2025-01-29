@@ -18,12 +18,9 @@ int StompProtocol::generateReceiptId() {
 
 // Login to the server
 std::string StompProtocol::login(const std::string& host, const std::string& username, const std::string& password) {
-    if (isLoggedIn) {
-        return "The client is already logged in, log out before trying again.";
-    }
     this->username = username;
     isLoggedIn = true;  // Assume successful login for now
-    return "CONNECT\naccept-version:1.2\nhost:" + host + "\nlogin:" + username + "\npasscode:" + password + "\n\n\0";
+    return "CONNECT\naccept-version:1.2\nhost:" + host + "\nlogin:" + username + "\npasscode:" + password + "\n\n";
 }
 
 // Logout from the server
@@ -33,23 +30,24 @@ std::string StompProtocol::logout() {
     }
     isLoggedIn = false;
     username = "";
-    return "DISCONNECT\nreceipt:" + std::to_string(generateReceiptId()) + "\n\n\0";
+    return "DISCONNECT\nreceipt:" + std::to_string(generateReceiptId()) + "\n\n";
 }
 
 // Subscribe to a topic
 std::string StompProtocol::subscribe(const std::string& destination) {
     int id = generateSubscriptionId();
     int receiptId = generateReceiptId();
-    subscriptions[id] = destination;
-    return "SUBSCRIBE\ndestination:/" + destination + "\nid:" + std::to_string(id) + "\nreceipt:" + std::to_string(receiptId) + "\n\n\0";
+    subscriptions[destination] = id;
+    return "SUBSCRIBE\ndestination:/" + destination + "\nid:" + std::to_string(id) + "\nreceipt:" + std::to_string(receiptId) + "\n\n";
 }
 
 // Unsubscribe from a topic
-std::string StompProtocol::unsubscribe(int id) {
-    if (subscriptions.find(id) != subscriptions.end()) {
+std::string StompProtocol::unsubscribe(const std::string& destination) {
+    if (subscriptions.find(destination) != subscriptions.end()) {
         int receiptId = generateReceiptId();
-        subscriptions.erase(id);
-        return "UNSUBSCRIBE\nid:" + std::to_string(id) + "\nreceipt:" + std::to_string(receiptId) + "\n\n\0";
+        int id = subscriptions[destination];
+        subscriptions.erase(destination);
+        return "UNSUBSCRIBE\nid:" + std::to_string(id) + "\nreceipt:" + std::to_string(receiptId) + "\n\n";
     }
     return "Error: Subscription ID not found.";
 }
@@ -57,7 +55,7 @@ std::string StompProtocol::unsubscribe(int id) {
 // Send a message to a topic
 std::string StompProtocol::send(const std::string& destination, const std::string& message) {
     int receiptId = generateReceiptId();
-    return "SEND\ndestination:/" + destination + "\nreceipt:" + std::to_string(receiptId) + "\n\n" + message + "\0";
+    return "SEND\ndestination:/" + destination + "\nreceipt:" + std::to_string(receiptId) + "\n\n" + message + "";
 }
 
 // Process server responses
